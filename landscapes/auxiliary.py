@@ -3,6 +3,7 @@
 """
 
 import itertools
+
 import numpy as np
 
 
@@ -44,13 +45,16 @@ def union_crit_pairs(A, B):
         else:
             result_pairs.append(
                 slope_to_pos_interp(
-                    sum_slopes(pos_to_slope_interp(a), pos_to_slope_interp(b),)
+                    sum_slopes(
+                        pos_to_slope_interp(a),
+                        pos_to_slope_interp(b),
+                    )
                 )
             )
     return result_pairs
 
 
-def pos_to_slope_interp(l: list) -> list:
+def pos_to_slope_interp(l: list, flag=False) -> list:
     """Convert positions of critical pairs to (x-value, slope) pairs.
 
     Intended for internal use. Inverse function of `slope_to_pos_interp`.
@@ -64,8 +68,14 @@ def pos_to_slope_interp(l: list) -> list:
     output = []
     # for sequential pairs in landscape function
     for [[x0, y0], [x1, y1]] in zip(l, l[1:]):
-        slope = (y1 - y0) / (x1 - x0)
-        output.append([x0, slope])
+        if x1 - x0 == 0:
+            print("Problem Graph")
+            continue
+            # what could produce multiple critical points at the same scale?
+            # should I be setting the new y-value to y_0+y_1?
+        else:
+            slope = (y1 - y0) / (x1 - x0)
+            output.append([x0, slope])
     output.append([l[-1][0], 0])
     return output
 
@@ -141,7 +151,7 @@ def ndsnap_regular(points, *grid_axes):
 
 def _p_norm(p: float, critical_pairs: list = []):
     """
-    Compute `p` norm of interpolated piecewise linear function defined from list of 
+    Compute `p` norm of interpolated piecewise linear function defined from list of
     critical pairs.
     """
     result = 0.0
